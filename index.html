@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mediinsumos S.A.S. · Propuesta de migración de correo</title>
+<style>
+  :root{
+    --tinta:#14181d; --gris:#5b6672; --linea:#e4e8ec;
+    --azul:#1a56a8; --azull:#eff5fd;
+    --verde:#17663f; --verdel:#edf6f1;
+    --rojo:#9c2a2a; --rojol:#fdf2f2;
+    --ambar:#8a6100; --ambarl:#fff8e8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:48px 24px 80px;
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    color:var(--tinta); background:#fff;
+  }
+  .wrap{max-width:860px; margin:0 auto;}
+  header{border-bottom:3px solid var(--azul); padding-bottom:22px; margin-bottom:38px;}
+  .kicker{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--azul);
+          font-weight:700; margin:0 0 10px;}
+  h1{font-size:29px; line-height:1.2; margin:0 0 10px; font-weight:700;}
+  .sub{color:var(--gris); margin:0; font-size:17px;}
+  h2{font-size:21px; margin:44px 0 14px; padding-top:22px; border-top:1px solid var(--linea);
+     font-weight:700;}
+  h2:first-of-type{border-top:0; padding-top:0;}
+  h3{font-size:16px; margin:26px 0 8px; font-weight:700;}
+  p{margin:0 0 14px;}
+  ul{margin:0 0 16px; padding-left:22px;}
+  li{margin-bottom:9px;}
+  .caja{border-radius:10px; padding:20px 24px; margin:22px 0;}
+  .verde{background:var(--verdel); border-left:4px solid var(--verde);}
+  .rojo{background:var(--rojol); border-left:4px solid var(--rojo);}
+  .ambar{background:var(--ambarl); border-left:4px solid var(--ambar);}
+  .azul{background:var(--azull); border-left:4px solid var(--azul);}
+  .caja h3{margin-top:0;}
+  .caja p:last-child{margin-bottom:0;}
+  table{width:100%; border-collapse:collapse; margin:18px 0 22px; font-size:15px;}
+  th{text-align:left; font-size:12px; letter-spacing:.07em; text-transform:uppercase;
+     color:var(--gris); border-bottom:2px solid var(--linea); padding:0 10px 8px 0;}
+  td{padding:11px 10px 11px 0; border-bottom:1px solid var(--linea); vertical-align:top;}
+  td.num{font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .ok{color:var(--verde); font-weight:600;}
+  .mal{color:var(--rojo); font-weight:600;}
+  .nota{font-size:14px; color:var(--gris);}
+  footer{margin-top:52px; padding-top:20px; border-top:1px solid var(--linea);
+         font-size:13px; color:var(--gris);}
+  code{background:#f2f4f6; padding:1px 5px; border-radius:4px; font-size:14px;}
+  @media print{body{padding:0;} .caja{break-inside:avoid;} h2{break-after:avoid;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="kicker">Mediinsumos S.A.S. · NIT 900.838.110-4 · Propuesta</p>
+  <h1>Migración del correo corporativo a Google Workspace</h1>
+  <p class="sub">Alcance, cronograma sin interrupción del servicio, costos y honorarios</p>
+</header>
+
+<h2>Lo primero: el retraso de 15 minutos a 1 hora puede no necesitar una migración</h2>
+
+<div class="caja ambar">
+  <h3>Antes de aprobar nada, conviene medir</h3>
+  <p>El síntoma reportado, que un correo saliente tarda entre quince minutos y
+  una hora en llegar, es la firma característica del <strong>greylisting</strong>:
+  el servidor que recibe rechaza el primer intento con un error temporal y obliga
+  a reintentar más tarde. Es una defensa antispam estándar, y se aplica
+  justamente a los remitentes que el receptor no reconoce como confiables.</p>
+  <p>La confianza se construye con tres registros DNS (SPF, DKIM y DMARC) y con
+  la reputación de la dirección IP desde la que se envía. <strong>El informe del
+  1 de octubre ya señaló que esos registros estaban incompletos</strong> y que al
+  menos un correo saliente había sido marcado como no deseado.</p>
+  <p>Si esa es la causa, se corrige en aproximadamente una hora y no hace falta
+  migrar nada para resolverlo. Sería incorrecto de nuestra parte cobrar una
+  migración por un problema que puede ser un registro DNS.</p>
+</div>
+
+<h3>Cómo se despeja la duda</h3>
+<p>Dos revisiones, menos de una hora en total:</p>
+<ul>
+  <li><strong>Los encabezados completos de un correo que se haya demorado.</strong>
+  Cada servidor por el que pasa el mensaje deja una línea <code>Received:</code> con
+  su hora. Comparándolas se ve exactamente dónde se perdió el tiempo: si fue en la
+  cola de salida del servidor actual, o si fue el destinatario quien lo retuvo.</li>
+  <li><strong>El estado de SPF, DKIM y DMARC del dominio.</strong> Se consulta
+  directamente sobre el DNS público.</li>
+</ul>
+
+<table>
+  <tr><th>Lo que muestre el diagnóstico</th><th>Qué significa</th><th>Qué hacer</th></tr>
+  <tr>
+    <td>El tiempo se pierde <em>en el destino</em> y falta SPF/DKIM/DMARC</td>
+    <td>Greylisting por autenticación incompleta</td>
+    <td class="ok">Corregir registros · ~1 hora · sin migrar</td>
+  </tr>
+  <tr>
+    <td>El tiempo se pierde <em>en el destino</em> con los registros correctos</td>
+    <td>Reputación de la IP compartida del hosting</td>
+    <td>Migrar resuelve de raíz: se enviaría desde la infraestructura de Google</td>
+  </tr>
+  <tr>
+    <td>El tiempo se pierde <em>antes de salir</em></td>
+    <td>Cola o límite de envío del plan compartido</td>
+    <td>Migrar resuelve de raíz</td>
+  </tr>
+</table>
+
+<p>En los dos últimos casos la migración es la solución correcta. En el primero,
+sigue siendo recomendable por otras razones, que se explican abajo, pero no con
+la urgencia de una falla operativa.</p>
+
+<h2>Situación actual</h2>
+
+<p>Hoy la correspondencia de la empresa está repartida entre dos sistemas que no
+se hablan entre sí:</p>
+
+<table>
+  <tr><th>Dirección</th><th>Dónde vive hoy</th><th>Observación</th></tr>
+  <tr><td>contabilidad@mediinsumos.com.co</td><td>Hosting (Hostinger)</td><td class="num">6,40 GB</td></tr>
+  <tr><td>direccioncomercial@mediinsumos.com.co</td><td>Hosting</td><td class="num">5,59 GB</td></tr>
+  <tr><td>direcciontecnica@mediinsumos.com.co</td><td>Hosting</td><td class="num">1,51 GB</td></tr>
+  <tr><td>gerencia@mediinsumos.com.co</td><td>Hosting</td><td class="num">14,37 GB</td></tr>
+  <tr><td>logistica@mediinsumos.com.co</td><td>Hosting</td><td class="num">10,00 GB</td></tr>
+  <tr><td>cotizaciones.mediinsumos@gmail.com</td><td class="mal">Cuenta personal</td><td>No es del dominio</td></tr>
+  <tr><td>mediinsumosadmon@gmail.com</td><td class="mal">Cuenta personal</td><td>No es del dominio</td></tr>
+  <tr><td>soporte2mediinsumos@gmail.com</td><td class="mal">Cuenta personal</td><td>No es del dominio</td></tr>
+  <tr><td>cartagena.mediinsumos@gmail.com</td><td class="mal">Cuenta personal</td><td>No es del dominio</td></tr>
+</table>
+
+<p class="nota">Volumen real de correo en los buzones corporativos:
+<strong>37,87 GB</strong>, medido el 1 de octubre de 2026.</p>
+
+<div class="caja rojo">
+  <h3>Cuatro de las nueve direcciones no son de la empresa</h3>
+  <p>Son cuentas personales de Gmail manejando relación con clientes y
+  proveedores. Esto no es un detalle de forma. El día que una de esas personas
+  se retire, <strong>la cuenta se va con ella</strong>: la empresa pierde el
+  histórico, los contactos y la dirección por la que esos clientes escriben.
+  Tampoco hay forma de auditarlas, ni de recuperar un correo si alguien lo
+  borra.</p>
+  <p>El informe del 1 de octubre ya lo había señalado. Es, en nuestra opinión, un
+  riesgo mayor que el retraso de los correos.</p>
+</div>
+
+<h2>Esto son dos proyectos, no uno</h2>
+
+<p>Conviene separarlos porque tienen riesgos y tiempos muy distintos:</p>
+
+<h3>A · Mover los cinco buzones del dominio</h3>
+<p>Trabajo técnico, riesgo bajo, <strong>invisible desde afuera</strong>. Nadie
+cambia de dirección, los clientes no se enteran. Es la parte que se puede hacer
+sin interrumpir la operación y la que resuelve el problema de entrega.</p>
+
+<h3>B · Pasar las cuatro cuentas de Gmail al dominio</h3>
+<p>Esto es un proyecto de comunicación, no de informática. Cada contacto externo
+(clientes, proveedores, entidades) tiene que aprender la dirección nueva, y
+durante meses seguirán escribiendo a la vieja. Además, <strong>el correo que hay
+dentro de una cuenta personal es de la persona</strong>, no de la empresa: para
+copiarlo hace falta su autorización expresa y por escrito.</p>
+<p>Se puede hacer, y vale la pena. Pero el tiempo se va en avisar y en el
+reenvío temporal, no en la parte técnica.</p>
+
+<h2>Qué cuesta el servicio (lo que se le paga a Google o a Microsoft)</h2>
+
+<p>Para nueve usuarios, con compromiso anual:</p>
+
+<table>
+  <tr><th>Plan</th><th>Almacenamiento</th><th class="num">Por usuario/mes</th><th class="num">9 usuarios/mes</th><th class="num">Al año</th></tr>
+  <tr>
+    <td><strong>Google Workspace Business Starter</strong></td>
+    <td>30 GB por usuario, agrupados</td>
+    <td class="num">COP $29.200</td>
+    <td class="num">COP $262.800</td>
+    <td class="num">COP $3.153.600</td>
+  </tr>
+  <tr>
+    <td>Google Workspace Business Standard</td>
+    <td>2 TB por usuario, agrupados</td>
+    <td class="num">COP $58.400</td>
+    <td class="num">COP $525.600</td>
+    <td class="num">COP $6.307.200</td>
+  </tr>
+  <tr>
+    <td>Microsoft 365 Empresa Básico</td>
+    <td>50 GB buzón + 1 TB OneDrive</td>
+    <td class="num">USD $7,00</td>
+    <td class="num">USD $63</td>
+    <td class="num">USD $756</td>
+  </tr>
+  <tr>
+    <td>Microsoft 365 Empresa Estándar</td>
+    <td>50 GB + 1 TB + Office escritorio</td>
+    <td class="num">USD $14,00</td>
+    <td class="num">USD $126</td>
+    <td class="num">USD $1.512</td>
+  </tr>
+</table>
+
+<p class="nota">Precios de lista consultados el 24 de octubre de 2026. Los de
+Microsoft están publicados en dólares para Colombia; la cifra en pesos depende
+de la tasa del día de facturación. El plan mensual sin compromiso cuesta
+aproximadamente un 20 % más en ambos proveedores.</p>
+
+<div class="caja azul">
+  <h3>Recomendación: Business Starter alcanza</h3>
+  <p>Con 30 GB por usuario agrupados, nueve licencias dan un fondo común de
+  <strong>270 GB</strong>. El correo actual ocupa 37,87 GB: queda espacio de
+  sobra para años, y se acaba el problema de redistribuir cuotas a mano que
+  provocó la caída del 1 de octubre.</p>
+  <p>Business Standard solo se justifica si además quieren usar Drive como
+  servidor de archivos de la empresa. Es el doble de costo por una capacidad que
+  hoy no necesitan para correo.</p>
+</div>
+
+<div class="caja ambar">
+  <h3>Hay que verificar algo antes de cotizar en firme</h3>
+  <p>El informe del 1 de octubre menciona que Mediinsumos <strong>ya cuenta con
+  Google Workspace</strong> para algunos miembros de la organización. Si eso es
+  así, parte de las licencias ya están pagadas y el costo baja. Pero también
+  significa que el dominio podría estar ya verificado en esa cuenta, lo que
+  cambia el procedimiento: no se crea una organización nueva, se amplía la que
+  existe.</p>
+  <p>Es la primera pregunta a resolver, y puede mover el presupuesto en
+  cualquiera de los dos sentidos.</p>
+</div>
+
+<h2>Cronograma: tres semanas, sin un minuto de servicio caído</h2>
+
+<p>La migración de correo se hace sin interrupción si se respeta el orden. La
+clave es que <strong>el servidor viejo sigue recibiendo</strong> mientras el
+cambio se propaga, así que ningún mensaje se pierde ni rebota.</p>
+
+<table>
+  <tr><th>Semana</th><th>Qué pasa</th><th>Impacto en la operación</th></tr>
+  <tr>
+    <td><strong>0</strong><br><span class="nota">1–2 días</span></td>
+    <td>Diagnóstico del retraso. Revisión de la cuenta de Workspace existente.
+    Decisión de plan.</td>
+    <td class="ok">Ninguno</td>
+  </tr>
+  <tr>
+    <td><strong>1</strong></td>
+    <td>Se crean los usuarios, se verifica el dominio y se configuran SPF, DKIM y
+    DMARC. Se baja el TTL de los registros MX a 5 minutos, 48 horas antes del
+    corte. Arranca la primera copia del correo.</td>
+    <td class="ok">Ninguno · el correo sigue entrando y saliendo por el sistema actual</td>
+  </tr>
+  <tr>
+    <td><strong>2</strong></td>
+    <td>La primera copia termina. <strong>Corte un viernes en la noche</strong>:
+    se cambian los MX a Google. El sábado se corre una segunda pasada que recoge
+    lo que haya llegado al servidor viejo durante la propagación. Verificación
+    buzón por buzón.</td>
+    <td class="ok">Ninguno · durante la propagación los dos sistemas reciben</td>
+  </tr>
+  <tr>
+    <td><strong>3</strong></td>
+    <td>Las cuatro cuentas de Gmail: creación en el dominio, copia con
+    autorización del titular, reenvío automático desde la cuenta vieja y aviso a
+    contactos. Acompañamiento diario.</td>
+    <td>Las personas aprenden la dirección nueva. El reenvío evita perder correo.</td>
+  </tr>
+</table>
+
+<p><strong>El viernes en la noche no es un capricho.</strong> Mediinsumos es un
+distribuidor: el lunes es el día de más movimiento. Cortar el viernes deja el
+fin de semana entero para verificar y, si algo sale mal, para devolver los MX al
+servidor anterior sin que nadie en la operación lo note.</p>
+
+<p>Los buzones viejos se mantienen accesibles en modo lectura
+<strong>30 días</strong> después del corte. No se borra nada hasta que esté
+confirmado que todo llegó.</p>
+
+<h2>Honorarios</h2>
+
+<p>El trabajo se estima en <strong>42 horas</strong>, repartidas así:</p>
+
+<table>
+  <tr><th>Fase</th><th class="num">Horas</th></tr>
+  <tr><td>Diagnóstico del retraso y revisión de la cuenta existente</td><td class="num">3</td></tr>
+  <tr><td>Preparación: usuarios, verificación de dominio, SPF/DKIM/DMARC</td><td class="num">5</td></tr>
+  <tr><td>Primera copia de los 5 buzones (37,87 GB), supervisada</td><td class="num">5</td></tr>
+  <tr><td>Rescate de mensajes mayores a 25 MB con herramienta aparte</td><td class="num">4</td></tr>
+  <tr><td>Corte de MX y monitoreo de la propagación</td><td class="num">4</td></tr>
+  <tr><td>Segunda pasada y verificación buzón por buzón</td><td class="num">4</td></tr>
+  <tr><td>Las 4 cuentas de Gmail: copia, reenvío y aviso a contactos</td><td class="num">8</td></tr>
+  <tr><td>Acompañamiento la primera semana después del corte</td><td class="num">6</td></tr>
+  <tr><td>Documentación y entrega de accesos</td><td class="num">3</td></tr>
+  <tr><td><strong>Total</strong></td><td class="num"><strong>42 horas</strong></td></tr>
+</table>
+
+<h3>Propuesta económica</h3>
+
+<table>
+  <tr><th>Concepto</th><th class="num">Horas</th><th class="num">Valor</th></tr>
+  <tr>
+    <td><strong>Fase A · Migración de los cinco buzones del dominio</strong><br>
+    <span class="nota">Diagnóstico, preparación, copia, corte, verificación y
+    acompañamiento. Resuelve el problema de entrega.</span></td>
+    <td class="num">34</td>
+    <td class="num"><strong>COP $2.400.000</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Fase B · Paso de las cuatro cuentas de Gmail al dominio</strong><br>
+    <span class="nota">Creación, copia con autorización del titular, reenvío
+    temporal y aviso a contactos.</span></td>
+    <td class="num">8</td>
+    <td class="num"><strong>COP $800.000</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Las dos fases juntas</strong></td>
+    <td class="num">42</td>
+    <td class="num"><strong>COP $3.100.000</strong></td>
+  </tr>
+  <tr>
+    <td>Administración mensual del servicio <span class="nota">(opcional)</span><br>
+    <span class="nota">Altas y bajas de usuarios, revisión de seguridad y de
+    almacenamiento, vigilancia de la entrega, soporte por WhatsApp.</span></td>
+    <td class="num"></td>
+    <td class="num">COP $250.000 / mes</td>
+  </tr>
+</table>
+
+<p><strong>Forma de pago:</strong> 50 % al iniciar · 50 % contra verificación
+del corte. La administración mensual se factura mes vencido.</p>
+
+<p><strong>No incluye</strong> el costo de las licencias de Google Workspace,
+que Mediinsumos contrata y paga directamente a Google. Esto es a propósito: la
+cuenta queda a nombre de la empresa desde el primer día, no a nombre de un
+tercero.</p>
+
+<div class="caja azul">
+  <h3>De dónde sale ese valor</h3>
+  <p>De las 42 horas de la tabla anterior, y de la naturaleza del trabajo.
+  Una atención de soporte se cobra por el rato que toma: la del 1 de octubre
+  fueron <strong>COP $400.000</strong> por una jornada de urgencia. Una
+  migración se cobra por otra cosa, porque se responde por algo distinto.</p>
+  <p><strong>Si el corte sale mal, la empresa deja de recibir pedidos.</strong>
+  Esa es la diferencia. Por eso el plan lleva ventana de viernes en la noche,
+  TTL bajo para poder revertir en minutos, una segunda pasada que recoge lo que
+  caiga durante la propagación, y treinta días con el sistema anterior intacto
+  antes de apagar nada. Construir esa red de seguridad, y responder por ella,
+  es la mitad del trabajo aunque no se vea en ninguna pantalla.</p>
+</div>
+
+<p>Sugerimos aprobar las <strong>dos fases por separado</strong>. La fase A
+resuelve el problema de entrega y es la urgente; la fase B se puede hacer
+después, cuando la empresa decida asumir el cambio de direcciones con sus
+clientes.</p>
+
+<h2>Riesgos y cómo se manejan</h2>
+
+<table>
+  <tr><th>Riesgo</th><th>Cómo se maneja</th></tr>
+  <tr>
+    <td><strong>La herramienta gratuita de Google no migra mensajes de más de 25 MB.</strong>
+    En un distribuidor de insumos médicos, con catálogos, cotizaciones y
+    fichas técnicas, es probable que haya varios.</td>
+    <td>Se hace un pase aparte con una herramienta de sincronización IMAP que no
+    tiene ese límite. Está contemplado en las 42 horas.</td>
+  </tr>
+  <tr>
+    <td><strong>El correo de las cuentas personales de Gmail es de la persona,
+    no de la empresa.</strong></td>
+    <td>Se pide autorización expresa y por escrito a cada titular antes de copiar
+    nada. Si alguien no autoriza, se configura reenvío y se deja constancia; no
+    se copia su correo.</td>
+  </tr>
+  <tr>
+    <td><strong>El buzón de gerencia@ tiene 14,37 GB</strong> y es el que más
+    tarda en copiarse.</td>
+    <td>Se arranca por ese, al comienzo de la semana 1, para que no sea el que
+    retrase el corte.</td>
+  </tr>
+  <tr>
+    <td><strong>Si el dominio ya está verificado en otra cuenta de Workspace</strong>,
+    no se puede crear una organización nueva hasta resolverlo.</td>
+    <td>Es lo primero que se revisa en la semana 0, antes de comprometer fecha
+    de corte.</td>
+  </tr>
+  <tr>
+    <td><strong>Las carpetas IMAP compartidas no se migran</strong> con la
+    herramienta estándar.</td>
+    <td>Se inventarían en la semana 0. Si existen, se migran aparte.</td>
+  </tr>
+  <tr>
+    <td><strong>Que el corte salga mal.</strong></td>
+    <td>Con el TTL bajo a 5 minutos, devolver los MX al servidor anterior toma
+    minutos, no horas. Por eso se corta un viernes.</td>
+  </tr>
+</table>
+
+<h2>Lo que hace falta para cotizar en firme</h2>
+
+<ul>
+  <li>Los encabezados completos de un correo que se haya demorado.</li>
+  <li>Confirmación de si ya existe una cuenta de Google Workspace a nombre de la
+  empresa, y cuántas licencias tiene.</li>
+  <li>Acceso al panel de DNS del dominio (o confirmación de quién lo administra).</li>
+  <li>El tamaño aproximado de las cuatro cuentas de Gmail.</li>
+  <li>Definición de si la fase B entra ahora o después.</li>
+</ul>
+
+<footer>
+  Propuesta preparada por TPM · Estudio Web para Mediinsumos S.A.S.
+  el 24 de octubre de 2026, sobre el informe técnico del 1 de octubre de 2026 y
+  los precios de lista de Google Workspace y Microsoft 365 vigentes a esa fecha.
+  Las horas son una estimación; las tarifas de la tabla son ilustrativas y no
+  constituyen una oferta en firme.
+</footer>
+
+</div>
+</body>
+</html>
